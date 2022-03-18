@@ -1,12 +1,23 @@
+from dataclasses import dataclass
 from typing import List, Optional
 from collections import defaultdict
 
 
+@dataclass
 class CNode:
-    def __init__(self, name: str, url: str):
-        self.name = name
+    def __init__(self, url: str, title: str, desc: str, name: Optional[str] = None):
         self.url = url
+        self.desc = desc
+        self.name = name
+        self.title = title
         self.children = []
+
+    def __post_init__(self):
+        self.title = self.title.strip().capitalize()
+        self.desc = self.desc.strip()
+        if self.name is None:
+            self.name = self.title[:7]
+        self.name = self.name.strip().lower()
 
     def get_children(self) -> List['CNode']:
         return self.children
@@ -16,37 +27,29 @@ class CNode:
 
 
 class CMap:
-    def __init__(self, base_url: str):
+    def __init__(self):
         self._states = defaultdict(None)
-        self.root = CNode('root', base_url)
-        self.__post_init__()
-
-    def __post_init__(self):
-        self._states['root'] = self.root
-
-    def __repr__(self):
-        return self.__show(self.root)
 
     @property
     def states(self) -> List[CNode]:
         return list(self._states.values())
 
-    def add(self, name: str, url: str, parent: Optional[str] = None):
-        if parent is None:
-            parent = 'root'
-        if parent not in self._states:
-            self._states[parent] = CNode(parent, self._states[parent].url)
-        self._states[parent].add_children([CNode(name, url)])
+    def add(self, url: str, **kwargs):
+        node = CNode(url=url, **kwargs)
+        self._states[url] = node
 
-    def get(self, name: str) -> Optional[CNode]:
-        return self._states.get(name)
+    def get(self, url: str) -> Optional[CNode]:
+        return self._states.get(url)
+
+    @staticmethod
+    def map(child: CNode, parent: CNode):
+        parent.add_children([child])
 
     def destroy(self):
         self._states.clear()
-        self.root = None
 
-    def __show(self, node: CNode, indent: int = 4):
+    def show(self, node: CNode, indent: int = 4):
         representation = [f'–{node.name.split("-")[-1]}']
         for child in node.children:
-            representation.extend(['\n', ' ' * indent, self.__show(child, indent * 2)])
+            representation.extend(['\n', ' ' * indent, self.show(child, indent * 2)])
         return ''.join(representation)
