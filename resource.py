@@ -4,6 +4,8 @@ from typing import Optional
 from bs4 import BeautifulSoup
 from dataclasses import dataclass
 from urllib.parse import urlparse, urljoin
+from asyncio.exceptions import TimeoutError
+from aiohttp.client_exceptions import ClientOSError
 
 
 @dataclass
@@ -52,10 +54,10 @@ class Resource:
         self._url = urljoin(self._site_url, parsed_uri.path)
 
     @staticmethod
-    async def get_page(url, headers=None):
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=headers) as response:
-                return await response.text(), str(response.url)
+    async def get_page(url, headers=None, connector=None):
+        """Get page from url"""
+        async with aiohttp.request('GET', url, headers=headers, connector=connector) as response:
+            return await response.text(), str(response.url)
 
     def meta(self, soup: BeautifulSoup):
         """Get name, title, & description of a page"""
@@ -84,23 +86,22 @@ class Resource:
                     href = urljoin(self._site_url, href)
                 href = urljoin(self._site_url, urlparse(href).path)
                 self._links.append(href)
-            except Exception as exc:
-                print(exc)
+            except Exception:
                 pass
 
-    async def parse(self):
+    async def parse(self, connector=None):
         """Parse URL."""
         try:
-            page, self._url = await self.get_page(self._url, headers={'User-Agent': 'Mozilla/6.0'})
+            page, self._url = await self.get_page(self._url, headers={'User-Agent': 'Mozilla/6.0'}, connector=connector)
             self.format(True)
             soup = BeautifulSoup(page, 'html.parser')
             self.meta(soup)
             self.children(soup)
-        except BrokenPipeError:
+        except (TimeoutError, BrokenPipeError, ClientOSError, aiohttp.ServerDisconnectedError) as exc:
             # DDOS protection
             print('cooldown')
-            await asyncio.sleep(1)
-            await self.parse()
+            await asyncio.sleep(2)
+            raise exc
         except Exception as exc:
             raise exc
 
