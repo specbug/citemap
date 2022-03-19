@@ -64,23 +64,23 @@ class CMap:
         self._graph = nx.read_gpickle(filename)
         return self._graph
 
-    def plot(self, filename: Optional[str] = None, height: int = 1200, width: str = '100%'):
+    def plot(self, filename: Optional[str] = None, height: int = 1200, width: str = '70%'):
         net = Network(height=height, width=width, directed=True, heading=self._root)
         net.from_nx(self._graph)
-        # net.show_buttons(filter_=['physics'])
-        net.set_options(
-            """
-            var options = {
-              "physics": {
-                "barnesHut": {
-                  "gravitationalConstant": -15000,
-                  "centralGravity": 1
-                },
-                "minVelocity": 0.75
-              }
-            }
-            """
-        )
+        # net.set_options(
+        #     """
+        #     var options = {
+        #       "physics": {
+        #         "barnesHut": {
+        #           "gravitationalConstant": -15000,
+        #           "centralGravity": 1
+        #         },
+        #         "minVelocity": 0.75
+        #       }
+        #     }
+        #     """
+        # )
+        net.show_buttons(filter_=['physics'])
         for node in net.nodes:
             node['size'] = 15
             node['label'] = ''
