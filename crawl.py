@@ -57,16 +57,17 @@ async def main(url):
 
 
 if __name__ == '__main__':
-    uri = 'http://www.paulgraham.com/articles.html'
+    uri = 'http://www.yudkowsky.net/'
     # TODO: support max breadth and depth
     sweep_kernel = (4, 3)  # (breadth, depth)
     t0 = time.time()
     c_map = CMap()
-    asyncio.run(main(uri))
-    # graph: nx.DiGraph = c_map.load('nav.gpickle')
-    # c_map.edges = graph.edges()
+    # asyncio.run(main(uri))
+    graph: nx.DiGraph = c_map.load('paulgraham.gpickle')
+    c_map.edges = graph.edges()
     graph = c_map.cart()
-    c_map.edges = debloat(c_map.edges, nodes=len(graph.nodes()))
+    c_map.edges = debloat(c_map.edges, nodes=len(graph.nodes()), threshold=(0.95, 0.95))
     print(f'Crawled {c_map.size} internal linkmaps in {time.time() - t0} s')
-    c_map.save()
-    c_map.plot()
+    c_map.cart()
+    # c_map.save()
+    c_map.plot('paulgraham.html')
