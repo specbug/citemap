@@ -1,0 +1,2 @@
+class DDoSException(Exception):
+    pass
