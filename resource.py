@@ -7,6 +7,8 @@ from urllib.parse import urlparse, urljoin
 from asyncio.exceptions import TimeoutError
 from aiohttp.client_exceptions import ClientOSError
 
+from exceptions import DDoSException
+
 
 @dataclass
 class Resource:
@@ -113,9 +115,7 @@ class Resource:
             self.children(soup)
         except (TimeoutError, BrokenPipeError, ClientOSError, aiohttp.ServerDisconnectedError) as exc:
             # DDOS protection
-            print('cooldown')
-            await asyncio.sleep(2)
-            raise exc
+            raise DDoSException(exc) from exc
         except Exception as exc:
             raise exc
 
