@@ -10,13 +10,14 @@ from aiohttp.client_exceptions import ClientOSError
 
 @dataclass
 class Resource:
-    def __init__(self, url: str):
+    def __init__(self, url: str, site_url: Optional[str] = None):
         self._url = url
         self._links = []
         self._name = None
         self._desc = None
         self._title = None
-        self._site_url = None
+        self._site_url = site_url
+        self._base_url = None
         self.format()
 
     @property
@@ -49,9 +50,12 @@ class Resource:
             if not self._url.startswith('http'):
                 self._url = f'http://{self._url}'
             self._url = self._url.replace('https://', 'http://')
-        parsed_uri = urlparse(self._url)
-        self._site_url = f'{parsed_uri.scheme}://{parsed_uri.netloc}'
-        self._url = urljoin(self._site_url, parsed_uri.path)
+        else:
+            parsed_uri = urlparse(self._url)
+            if not self._site_url:
+                self._site_url = f'{parsed_uri.scheme}://{parsed_uri.netloc}'
+            self._base_url = f'{parsed_uri.scheme}://{parsed_uri.netloc}'
+            self._url = urljoin(self._base_url, parsed_uri.path)
 
     @staticmethod
     async def get_page(url, headers=None, connector=None):
@@ -82,9 +86,15 @@ class Resource:
                     continue
                 if href.startswith('http') and not href.startswith(self._site_url):
                     continue
+                if href.startswith('#'):
+                    continue
+                # TODO: check for MIME type
+                if href.endswith(('.jpg', '.png', '.gif', '.jpeg', '.svg', '.ico',
+                                  '.css', '.js', '.woff', '.woff2', '.ttf', '.eot', '.otf', '.pdf')):
+                    continue
                 if not href.startswith('http'):
                     href = urljoin(self._site_url, href)
-                href = urljoin(self._site_url, urlparse(href).path)
+                href = urljoin(self._base_url, urlparse(href).path)
                 self._links.append(href)
             except Exception:
                 pass
