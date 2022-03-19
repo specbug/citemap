@@ -34,6 +34,10 @@ class CMap:
     def states(self) -> List[CNode]:
         return list(self._states.values())
 
+    @property
+    def size(self):
+        return len(self.states)
+
     def add(self, url: str, **kwargs):
         node = CNode(url=url, **kwargs)
         self._states[url] = node
