@@ -1,9 +1,9 @@
 import tldextract
-import numpy as np
+import pandas as pd
 import networkx as nx
-from typing import List, Optional
 from pyvis.network import Network
 from collections import defaultdict
+from typing import List, Optional, Set, Tuple
 
 
 class CMap:
@@ -16,6 +16,10 @@ class CMap:
     @property
     def edges(self):
         return self._edges
+
+    @edges.setter
+    def edges(self, edges: Set[Tuple[str, str]]):
+        self._edges = set(edges)
 
     @property
     def root(self):
@@ -45,6 +49,7 @@ class CMap:
         edges = self._edges - {(None, self._root)}
         self._graph = nx.DiGraph()
         self._graph.add_edges_from(edges)
+        return self._graph
 
     def save(self, filename: Optional[str] = None):
         filename = filename or f'{str(tldextract.extract(self.root).domain)}.gpickle'
