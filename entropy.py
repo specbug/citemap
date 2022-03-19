@@ -2,6 +2,7 @@ import pandas as pd
 from typing import List, Optional, Set, Tuple
 
 
+# TODO: optimise (no need for greedy approach, use information entropy)
 def debloat(edges: set, nodes: int, threshold: tuple = (0.95, 0.95)) -> Set[Tuple[str, str]]:
     """Remove nodes with inflow and/or ourflow > threshold"""
     df = pd.DataFrame(list(edges), columns=["source", "target"])
