@@ -2,22 +2,28 @@ import time
 import json
 import aiohttp
 import asyncio
+import networkx as nx
 from bs4 import BeautifulSoup
 from typing import List, Optional
+from collections import defaultdict
 
 from cmap import CMap
+from entropy import debloat
 from resource import Resource
+
 
 sem = None
 connector = None
 site_uri = None
+base_uri = None
+nodes = defaultdict(lambda: False)
 
 
 async def crawl(url: str, parent: Optional[str] = None):
-    global c_map, site_uri
+    global c_map, site_uri, base_uri, nodes
     tasks = []
     try:
-        resource = Resource(url=url, site_url=site_uri)
+        resource = Resource(url=url, base_url=base_uri, site_url=site_uri)
         await resource.parse(connector=connector)
     except Exception as exc:
         print(f'Warning! Failed to parse {url}: {exc}')
@@ -26,9 +32,13 @@ async def crawl(url: str, parent: Optional[str] = None):
         c_map.connect(None, resource.site_url)
         parent = resource.site_url
         site_uri = resource.site_url
+        base_uri = resource.base_url
     if c_map.connected(parent, resource.url):
         return
     c_map.connect(parent, resource.url)
+    if nodes[resource.url]:
+        return
+    nodes[resource.url] = True
     for child_url in resource.links:
         if not c_map.connected(resource.url, child_url):
             async with sem:
@@ -47,12 +57,16 @@ async def main(url):
 
 
 if __name__ == '__main__':
-    uri = 'https://nav.al/'
+    uri = 'http://www.paulgraham.com/articles.html'
     # TODO: support max breadth and depth
     sweep_kernel = (4, 3)  # (breadth, depth)
     t0 = time.time()
     c_map = CMap()
     asyncio.run(main(uri))
+    # graph: nx.DiGraph = c_map.load('nav.gpickle')
+    # c_map.edges = graph.edges()
+    graph = c_map.cart()
+    c_map.edges = debloat(c_map.edges, nodes=len(graph.nodes()))
     print(f'Crawled {c_map.size} internal linkmaps in {time.time() - t0} s')
-    c_map.cart()
+    c_map.save()
     c_map.plot()
