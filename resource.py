@@ -10,14 +10,14 @@ from aiohttp.client_exceptions import ClientOSError
 
 @dataclass
 class Resource:
-    def __init__(self, url: str, site_url: Optional[str] = None):
+    def __init__(self, url: str, base_url: Optional[str] = None, site_url: Optional[str] = None):
         self._url = url
         self._links = []
         self._name = None
         self._desc = None
         self._title = None
+        self._base_url = base_url
         self._site_url = site_url
-        self._base_url = None
         self.format()
 
     @property
@@ -41,6 +41,10 @@ class Resource:
         return self._links
 
     @property
+    def base_url(self):
+        return self._base_url
+
+    @property
     def site_url(self):
         return self._site_url
 
@@ -54,7 +58,7 @@ class Resource:
             parsed_uri = urlparse(self._url)
             if not self._site_url:
                 self._site_url = f'{parsed_uri.scheme}://{parsed_uri.netloc}'
-            self._base_url = f'{parsed_uri.scheme}://{parsed_uri.netloc}'
+                self._base_url = f'{parsed_uri.scheme}://{parsed_uri.netloc}' + parsed_uri.path
             self._url = urljoin(self._base_url, parsed_uri.path)
 
     @staticmethod
