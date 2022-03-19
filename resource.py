@@ -57,8 +57,8 @@ class Resource:
         else:
             parsed_uri = urlparse(self._url)
             if not self._site_url:
-                self._site_url = f'{parsed_uri.scheme}://{parsed_uri.netloc}'
-                self._base_url = f'{parsed_uri.scheme}://{parsed_uri.netloc}' + parsed_uri.path
+                self._site_url = f'{parsed_uri.scheme}://{parsed_uri.netloc}/'
+                self._base_url = urljoin(f'{parsed_uri.scheme}://{parsed_uri.netloc}', parsed_uri.path)
             self._url = urljoin(self._base_url, parsed_uri.path)
 
     @staticmethod
