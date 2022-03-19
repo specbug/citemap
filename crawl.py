@@ -10,13 +10,14 @@ from resource import Resource
 
 sem = None
 connector = None
+site_uri = None
 
 
 async def crawl(url: str, parent: Optional[str] = None):
-    global c_map
+    global c_map, site_uri
     tasks = []
     try:
-        resource = Resource(url=url)
+        resource = Resource(url=url, site_url=site_uri)
         await resource.parse(connector=connector)
     except Exception as exc:
         print(f'Warning! Failed to parse {url}: {exc}')
@@ -24,6 +25,7 @@ async def crawl(url: str, parent: Optional[str] = None):
     if not parent:
         c_map.connect(None, resource.site_url)
         parent = resource.site_url
+        site_uri = resource.site_url
     if c_map.connected(parent, resource.url):
         return
     c_map.connect(parent, resource.url)
@@ -45,7 +47,7 @@ async def main(url):
 
 
 if __name__ == '__main__':
-    uri = 'https://www.waitbutwhy.com/'
+    uri = 'https://nav.al/'
     # TODO: support max breadth and depth
     sweep_kernel = (4, 3)  # (breadth, depth)
     t0 = time.time()
