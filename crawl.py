@@ -65,7 +65,7 @@ async def main(url):
 
 
 if __name__ == '__main__':
-    uri = 'https://www.gwern.net/'
+    uri = 'http://www.paulgraham.com/'
     # TODO: support max breadth and depth
     sweep_kernel = (4, 3)  # (breadth, depth)
     t0 = time.time()
@@ -78,7 +78,7 @@ if __name__ == '__main__':
     # graph: nx.DiGraph = c_map.load()
     # c_map.edges = graph.edges()
     graph = c_map.cart()
-    c_map.edges = debloat(c_map.edges, nodes=len(graph.nodes()), threshold=(0.002, 0.002))
+    c_map.edges = debloat(c_map.edges, nodes=len(graph.nodes()), threshold=(0.95, 0.95))
     print(f'Crawled {c_map.size} internal linkmaps in {time.time() - t0} s')
     c_map.cart()
     c_map.save()
