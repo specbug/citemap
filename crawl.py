@@ -13,13 +13,15 @@ from entropy import debloat
 from resource import Resource
 from exceptions import DDoSException
 
-site_uri = None
-base_uri = None
-memo = defaultdict(lambda: False)
 
-
-async def crawl(url: str, parent: Optional[str] = None, c_map: CMap = None) -> CMap:
-    global site_uri, base_uri, memo
+async def crawl(
+        url: str,
+        parent: Optional[str] = None,
+        c_map: CMap = None,
+        memo: defaultdict = None,
+        site_uri: Optional[str] = None,
+        base_uri: Optional[str] = None,
+) -> CMap:
     tasks = []
     is_done = False
     try:
@@ -48,7 +50,16 @@ async def crawl(url: str, parent: Optional[str] = None, c_map: CMap = None) -> C
     for child_url in resource.links:
         if not c_map.connected(resource.url, child_url):
             tasks.append(
-                asyncio.ensure_future(crawl(child_url, resource.url, c_map=c_map))
+                asyncio.ensure_future(
+                    crawl(
+                        url=child_url,
+                        parent=resource.url,
+                        c_map=c_map,
+                        memo=memo,
+                        site_uri=site_uri,
+                        base_uri=base_uri,
+                    )
+                )
             )
     await asyncio.gather(*tasks)
     return c_map
@@ -56,7 +67,10 @@ async def crawl(url: str, parent: Optional[str] = None, c_map: CMap = None) -> C
 
 async def main(url, c_map: CMap) -> CMap:
     try:
-        return await crawl(url, c_map=c_map)
+        site_uri = None
+        base_uri = None
+        memo = defaultdict(lambda: False)
+        return await crawl(url=url, parent=None, c_map=c_map, memo=memo, site_uri=site_uri, base_uri=base_uri)
     except Exception as e:
         raise e
     finally:
