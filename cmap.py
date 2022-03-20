@@ -67,6 +67,7 @@ class CMap:
     def plot(self, filename: Optional[str] = None, height: int = 1200, width: str = '70%'):
         net = Network(height=height, width=width, directed=True, heading=self._root)
         net.from_nx(self._graph)
+        # TODO: parameterize
         # net.set_options(
         #     """
         #     var options = {
