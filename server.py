@@ -3,31 +3,24 @@ import time
 import traceback
 from urllib.parse import urljoin
 from fastapi import APIRouter, Request
-from fastapi.templating import Jinja2Templates
-from starlette.responses import Response, HTMLResponse
+from starlette.responses import Response
 
 from cmap import CMap
 from crawl import main
 from models import Arg
 from entropy import debloat
-from config import STATIC_FOLDER
 
 router = APIRouter(prefix='/map')
-templates = Jinja2Templates(directory=STATIC_FOLDER)
 
 
-@router.post('/{url}', response_class=HTMLResponse)
-async def link_map(
-        request: Request,
-        argp: Arg
-):
+@router.post('/')
+async def link_map(argp: Arg):
     """
     Generate linkmap for a site.
     Args:
-        request: Request object.
         argp: Args.
     Returns:
-        redirects to linkmap.
+        filename
     """
     try:
         t0 = time.time()
@@ -51,9 +44,9 @@ async def link_map(
                 c_map.save()
                 out_file = c_map.plot(filename=argp.filename, height=argp.height, width=argp.width)
                 print(f'Generated internal linkmap for {argp.url}')
-                return templates.TemplateResponse(os.path.basename(out_file), {'request': request})
+                return Response(content=os.path.basename(out_file), status_code=200)
             else:
-                return HTMLResponse(content='No internal linkmap found', status_code=200)
+                return Response(content='No internal linkmap found', status_code=404)
     except Exception as exc:
         traceback.print_exc()
-        return HTMLResponse(content=f'Error: {exc}', status_code=500)
+        return Response(content=f'Error: {exc}', status_code=500)

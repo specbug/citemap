@@ -12,6 +12,6 @@ class Arg(BaseModel):
               r")(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s("
               r")<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
     )
-    filename: str = Field(..., description="output file name (.html)", example="plot.html", regex=r'\w+\.html')
+    filename: Optional[str] = Field(default=None, description="output file name (.html)")
     height: Optional[Union[int, str]] = '100%'
     width: Optional[Union[int, str]] = '100%'
