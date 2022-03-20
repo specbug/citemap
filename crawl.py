@@ -13,79 +13,71 @@ from entropy import debloat
 from resource import Resource
 from exceptions import DDoSException
 
-sem = None
-connector = None
 site_uri = None
 base_uri = None
 memo = defaultdict(lambda: False)
-c_map = None
 
 
-async def crawl(url: str, parent: Optional[str] = None):
-    global c_map, site_uri, base_uri, memo
+async def crawl(url: str, parent: Optional[str] = None, c_map: CMap = None) -> CMap:
+    global site_uri, base_uri, memo
     tasks = []
     is_done = False
     try:
         resource = Resource(url=url, base_url=base_uri, site_url=site_uri)
         if not memo.get(resource.url, False):
             memo[resource.url] = True
-            await resource.parse(connector=connector)
+            await resource.parse()
         else:
             is_done = True
     except DDoSException:
         [task.cancel() for task in tasks if not task.done()]
-        return
+        return c_map
     except Exception as exc:
         print(f'Warning! Failed to parse {url}: {exc}')
-        return
+        return c_map
     if not parent:
         c_map.connect(None, resource.site_url)
         parent = resource.site_url
         site_uri = resource.site_url
         base_uri = resource.base_url
     if c_map.connected(parent, resource.url):
-        return
+        return c_map
     c_map.connect(parent, resource.url)
     if is_done:
-        return
+        return c_map
     for child_url in resource.links:
         if not c_map.connected(resource.url, child_url):
-            async with sem:
-                tasks.append(
-                    asyncio.ensure_future(crawl(child_url, resource.url))
-                )
+            tasks.append(
+                asyncio.ensure_future(crawl(child_url, resource.url, c_map=c_map))
+            )
     await asyncio.gather(*tasks)
+    return c_map
 
 
-async def main(url, t_cmp: CMap) -> CMap:
-    global sem, connector, c_map
-    c_map = t_cmp
-    sem = asyncio.Semaphore(20)
-    connector = aiohttp.TCPConnector(limit=20)
+async def main(url, c_map: CMap) -> CMap:
     try:
-        await crawl(url)
+        await crawl(url, c_map=c_map)
     except Exception as e:
         raise e
     finally:
-        await connector.close()
         return c_map
 
 
 # if __name__ == '__main__':
 #     uri = ''
 #     t0 = time.time()
-#     c_map = CMap()
+#     g_c_map = CMap()
 #     try:
-#         asyncio.run(main(uri))
-#     except Exception as exc:
+#         asyncio.run(main(uri, g_c_map))
+#     except Exception:
+#         print('Preemptive termination')
 #         traceback.print_exc()
-#         print('Preemptive termination', exc)
-#     # graph: nx.DiGraph = c_map.load()
-#     # c_map.edges = graph.edges()
-#     graph = c_map.cart()
-#     print(f'Crawled {c_map.size} internal linkmaps in {time.time() - t0} s')
-#     c_map.edges = debloat(c_map.edges, nodes=len(graph.nodes()), threshold=(0.95, 0.95))
-#     print(f'Caring {c_map.size} edges')
-#     c_map.cart()
-#     c_map.save()
-#     c_map.plot()
+#     # graph: nx.DiGraph = g_c_map.load()
+#     # g_c_map.edges = graph.edges()
+#     graph = g_c_map.cart()
+#     print(f'Crawled {g_c_map.size} internal linkmaps in {time.time() - t0} s')
+#     g_c_map.edges = debloat(g_c_map.edges, nodes=len(graph.nodes()), threshold=(0.95, 0.95))
+#     print(f'Caring {g_c_map.size} edges')
+#     g_c_map.cart()
+#     g_c_map.save()
+#     g_c_map.plot()
