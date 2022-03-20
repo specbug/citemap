@@ -65,9 +65,7 @@ async def main(url):
 
 
 if __name__ == '__main__':
-    uri = 'https://nav.al/'
-    # TODO: support max breadth and depth
-    sweep_kernel = (4, 3)  # (breadth, depth)
+    uri = ''
     t0 = time.time()
     c_map = CMap()
     try:
@@ -78,8 +76,9 @@ if __name__ == '__main__':
     # graph: nx.DiGraph = c_map.load()
     # c_map.edges = graph.edges()
     graph = c_map.cart()
-    c_map.edges = debloat(c_map.edges, nodes=len(graph.nodes()), threshold=(0.95, 0.95))
     print(f'Crawled {c_map.size} internal linkmaps in {time.time() - t0} s')
+    c_map.edges = debloat(c_map.edges, nodes=len(graph.nodes()), threshold=(0.95, 0.95))
+    print(f'Caring {c_map.size} edges')
     c_map.cart()
     c_map.save()
     c_map.plot()
