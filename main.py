@@ -3,7 +3,7 @@ import asyncio
 import uvicorn
 from app import app
 
-HOST = os.getenv('HOST', '0.0.0.0')
+HOST = os.getenv('SERVER_HOST', '0.0.0.0')
 PORT = int(os.getenv('PORT', 9271))
 
 if __name__ == '__main__':
