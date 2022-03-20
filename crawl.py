@@ -56,7 +56,7 @@ async def crawl(url: str, parent: Optional[str] = None, c_map: CMap = None) -> C
 
 async def main(url, c_map: CMap) -> CMap:
     try:
-        await crawl(url, c_map=c_map)
+        return await crawl(url, c_map=c_map)
     except Exception as e:
         raise e
     finally:
@@ -68,7 +68,7 @@ async def main(url, c_map: CMap) -> CMap:
 #     t0 = time.time()
 #     g_c_map = CMap()
 #     try:
-#         asyncio.run(main(uri, g_c_map))
+#         g_c_map = asyncio.run(main(uri, g_c_map))
 #     except Exception:
 #         print('Preemptive termination')
 #         traceback.print_exc()
