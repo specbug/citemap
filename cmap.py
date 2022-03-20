@@ -1,9 +1,12 @@
+import os
 import tldextract
 import pandas as pd
 import networkx as nx
 from pyvis.network import Network
 from collections import defaultdict
 from typing import List, Optional, Set, Tuple
+
+from config import STATIC_FOLDER
 
 
 class CMap:
@@ -57,10 +60,12 @@ class CMap:
 
     def save(self, filename: Optional[str] = None):
         filename = filename or f'{str(tldextract.extract(self.root).domain)}.gpickle'
+        filename = os.path.join(STATIC_FOLDER, filename)
         nx.write_gpickle(self.graph, filename)
 
     def load(self, filename: Optional[str] = None):
         filename = filename or f'{str(tldextract.extract(self.root).domain)}.gpickle'
+        filename = os.path.join(STATIC_FOLDER, filename)
         self._graph = nx.read_gpickle(filename)
         return self._graph
 
@@ -89,6 +94,7 @@ class CMap:
             if node['id'] == self._root:
                 node['color'] = '#ff0000'
         filename = filename or f'{str(tldextract.extract(self.root).domain)}.html'
+        filename = os.path.join(STATIC_FOLDER, filename)
         net.save_graph(filename)
         return filename
 

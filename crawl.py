@@ -18,6 +18,7 @@ connector = None
 site_uri = None
 base_uri = None
 memo = defaultdict(lambda: False)
+c_map = None
 
 
 async def crawl(url: str, parent: Optional[str] = None):
@@ -56,29 +57,35 @@ async def crawl(url: str, parent: Optional[str] = None):
     await asyncio.gather(*tasks)
 
 
-async def main(url):
-    global sem, connector
+async def main(url, t_cmp: CMap) -> CMap:
+    global sem, connector, c_map
+    c_map = t_cmp
     sem = asyncio.Semaphore(20)
     connector = aiohttp.TCPConnector(limit=20)
-    await crawl(url)
-    await connector.close()
-
-
-if __name__ == '__main__':
-    uri = ''
-    t0 = time.time()
-    c_map = CMap()
     try:
-        asyncio.run(main(uri))
-    except Exception as exc:
-        traceback.print_exc()
-        print('Preemptive termination', exc)
-    # graph: nx.DiGraph = c_map.load()
-    # c_map.edges = graph.edges()
-    graph = c_map.cart()
-    print(f'Crawled {c_map.size} internal linkmaps in {time.time() - t0} s')
-    c_map.edges = debloat(c_map.edges, nodes=len(graph.nodes()), threshold=(0.95, 0.95))
-    print(f'Caring {c_map.size} edges')
-    c_map.cart()
-    c_map.save()
-    c_map.plot()
+        await crawl(url)
+    except Exception as e:
+        raise e
+    finally:
+        await connector.close()
+        return c_map
+
+
+# if __name__ == '__main__':
+#     uri = ''
+#     t0 = time.time()
+#     c_map = CMap()
+#     try:
+#         asyncio.run(main(uri))
+#     except Exception as exc:
+#         traceback.print_exc()
+#         print('Preemptive termination', exc)
+#     # graph: nx.DiGraph = c_map.load()
+#     # c_map.edges = graph.edges()
+#     graph = c_map.cart()
+#     print(f'Crawled {c_map.size} internal linkmaps in {time.time() - t0} s')
+#     c_map.edges = debloat(c_map.edges, nodes=len(graph.nodes()), threshold=(0.95, 0.95))
+#     print(f'Caring {c_map.size} edges')
+#     c_map.cart()
+#     c_map.save()
+#     c_map.plot()
