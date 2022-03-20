@@ -88,6 +88,8 @@ class CMap:
             node['title'] = f'<a href="{node["id"]}">{node["id"]}</a>'
             if node['id'] == self._root:
                 node['color'] = '#ff0000'
-        net.save_graph(filename or f'{str(tldextract.extract(self.root).domain)}.html')
+        filename = filename or f'{str(tldextract.extract(self.root).domain)}.html'
+        net.save_graph(filename)
+        return filename
 
 
