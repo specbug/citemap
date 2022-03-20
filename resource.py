@@ -42,6 +42,10 @@ class Resource:
     def links(self):
         return self._links
 
+    @links.setter
+    def links(self, links):
+        self._links = links
+
     @property
     def base_url(self):
         return self._base_url
