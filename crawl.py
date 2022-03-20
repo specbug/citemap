@@ -17,17 +17,17 @@ sem = None
 connector = None
 site_uri = None
 base_uri = None
-nodes = defaultdict(lambda: False)
+memo = defaultdict(lambda: False)
 
 
 async def crawl(url: str, parent: Optional[str] = None):
-    global c_map, site_uri, base_uri, nodes
+    global c_map, site_uri, base_uri, memo
     tasks = []
     is_done = False
     try:
         resource = Resource(url=url, base_url=base_uri, site_url=site_uri)
-        if not nodes.get(resource.url, False):
-            nodes[resource.url] = True
+        if not memo.get(resource.url, False):
+            memo[resource.url] = True
             await resource.parse(connector=connector)
         else:
             is_done = True
@@ -65,7 +65,7 @@ async def main(url):
 
 
 if __name__ == '__main__':
-    uri = 'http://www.paulgraham.com/'
+    uri = 'https://nav.al/'
     # TODO: support max breadth and depth
     sweep_kernel = (4, 3)  # (breadth, depth)
     t0 = time.time()
