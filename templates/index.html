@@ -161,7 +161,11 @@
 <!--              }-->
 <!--            }-->
         const hitCrawler = async () => {
+        document.getElementById('citemap-btn-crawler').innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
           var url = document.getElementById("citemap-search").value;
+          if (url.indexOf('http') === -1) {
+            url = 'http://' + url;
+          };
           console.log(url);
           var myBody = {
             "url": url,
@@ -183,6 +187,7 @@
           $(function(){
               $("#cmapContent").load(plotFile);
             });
+          document.getElementById('citemap-btn-crawler').innerHTML = 'map';
         };
         document.getElementById("citemap-btn-crawler").addEventListener("click", hitCrawler, false);
           };
