@@ -13,5 +13,5 @@ class Arg(BaseModel):
               r")<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
     )
     filename: str = Field(..., description="output file name (.html)", example="plot.html", regex=r'\w+\.html')
-    height: Optional[Union[int, str]] = 1200
-    width: Optional[Union[int, str]] = '70%'
+    height: Optional[Union[int, str]] = '100%'
+    width: Optional[Union[int, str]] = '100%'

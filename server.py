@@ -34,7 +34,7 @@ async def link_map(
         c_map = CMap()
         try:
             argp.url = urljoin(argp.url, '/')
-            c_map = await main(url=argp.url, t_cmp=c_map)
+            c_map = await main(url=argp.url, c_map=c_map)
         except Exception as exc:
             traceback.print_exc()
             print('Preemptive termination', exc)
