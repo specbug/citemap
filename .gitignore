@@ -134,4 +134,5 @@ dmypy.json
 # Misc
 *.gpickle
 *.html
+!index.html
 *.gpz
